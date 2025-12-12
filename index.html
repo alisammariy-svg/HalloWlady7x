@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kontrolle</title>
+  <style>
+    :root{
+      --bg:#070708;
+      --panel:#0f1012;
+      --ink:#e9e9ea;
+      --muted:#a9aaae;
+      --line:#2a2c31;
+      --ok:#7ee787;
+      --bad:#ff7b72;
+      --accent:#c7b58a;
+      --shadow: 0 20px 60px rgba(0,0,0,.55);
+      --r:18px;
+    }
+
+    html,body{height:100%;}
+    body{
+      margin:0;
+      background:
+        radial-gradient(1200px 800px at 35% 25%, rgba(199,181,138,.08), transparent 55%),
+        radial-gradient(900px 700px at 70% 70%, rgba(255,255,255,.04), transparent 55%),
+        var(--bg);
+      color:var(--ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      overflow-y:auto;
+    }
+
+    .wrap{
+      min-height:100%;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      padding: clamp(18px, 4vw, 40px);
+      padding-bottom: 90px;
+    }
+
+    .card{
+      width:min(920px, 100%);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), transparent 35%), var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .top{
+      padding: 22px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      align-items:flex-end;
+      justify-content:space-between;
+    }
+
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width: 260px;
+    }
+    .title h1{
+      margin:0;
+      font-size: 18px;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+    .title p{
+      margin:0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height:1.6;
+    }
+
+    .progress{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      min-width: 240px;
+    }
+    .meta{
+      display:flex;
+      justify-content:space-between;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .bar{
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.06);
+      overflow:hidden;
+    }
+    .bar > div{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(199,181,138,.2), rgba(199,181,138,.9));
+      transition: width .35s ease;
+    }
+
+    .body{
+      padding: 22px;
+      display:grid;
+      gap:16px;
+    }
+
+    .story{
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(0,0,0,.22);
+      line-height: 1.75;
+      color: var(--ink);
+      font-size: 14px;
+      white-space: pre-line;
+    }
+
+    .q{
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.03);
+      display:grid;
+      gap:12px;
+    }
+
+    .q h2{
+      margin:0;
+      font-size: 13px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .prompt{
+      font-size: 16px;
+      line-height:1.6;
+      margin:0;
+      color: var(--ink);
+    }
+
+    .prompt small{
+      color: var(--muted);
+      display:block;
+      margin-top:6px;
+      font-size: 12px;
+      line-height:1.6;
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    input[type="text"]{
+      flex: 1 1 240px;
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.10);
+      color: var(--ink);
+      padding: 12px 12px;
+      border-radius: 12px;
+      font-size: 16px;
+      outline:none;
+    }
+    input[type="text"]:focus{
+      border-color: rgba(199,181,138,.55);
+      box-shadow: 0 0 0 4px rgba(199,181,138,.12);
+    }
+
+    .btn{
+      appearance:none;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(199,181,138,.14);
+      color: var(--ink);
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-weight: 800;
+      letter-spacing:.06em;
+      text-transform: uppercase;
+      cursor:pointer;
+      transition: transform .05s ease, background .15s ease, border-color .15s ease;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn:hover{ background: rgba(199,181,138,.18); border-color: rgba(199,181,138,.35); }
+
+    .btn.secondary{
+      background: rgba(255,255,255,.05);
+    }
+
+    .msg{
+      font-size: 13px;
+      margin:0;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,.22);
+      color: var(--muted);
+    }
+    .msg.ok{
+      border-color: rgba(126,231,135,.35);
+      color: var(--ok);
+      background: rgba(126,231,135,.06);
+    }
+    .msg.bad{
+      border-color: rgba(255,123,114,.35);
+      color: var(--bad);
+      background: rgba(255,123,114,.06);
+    }
+
+    .done{
+      display:none;
+      padding: 18px;
+      border-radius: 14px;
+      border: 1px solid rgba(199,181,138,.35);
+      background: rgba(199,181,138,.08);
+      line-height: 1.9;
+      white-space: pre-line;
+    }
+    .done h3{
+      margin:0 0 8px 0;
+      font-size: 15px;
+      letter-spacing:.06em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .done p{ margin:0; }
+
+    .figure-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      margin-top:10px;
+    }
+    .fig{
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 12px;
+      background: rgba(0,0,0,.25);
+      padding: 10px;
+    }
+    .fig .label{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:8px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing:.08em;
+      text-transform: uppercase;
+    }
+    .fig svg{
+      width:100%;
+      height:auto;
+      display:block;
+      border-radius: 10px;
+    }
+
+    .footer{
+      padding: 16px 22px 20px 22px;
+      border-top:1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    @media (max-width: 640px){
+      .figure-grid{ grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 520px){
+      .top{ padding: 18px 16px 12px 16px; }
+      .body{ padding: 16px; }
+      .footer{ padding: 14px 16px 18px 16px; }
+      input[type="text"]{ flex: 1 1 100%; }
+      .btn{ width: 100%; }
+      .progress{ width:100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <main class="card">
+      <header class="top">
+        <div class="title">
+          <h1>Kontrolle</h1>
+          <p>Nur eine Antwort. Ein Wort, eine Zahl, oder ein Buchstabe.</p>
+        </div>
+        <div class="progress">
+          <div class="meta">
+            <span id="stepText">Frage 1 von 6</span>
+            <span id="attemptsText">Versuche: 0</span>
+          </div>
+          <div class="bar"><div id="barFill"></div></div>
+        </div>
+      </header>
+
+      <section class="body">
+        <div class="story" id="story">Du bist nah genug, um es zu spüren. Aber nicht nah genug, um es zu besitzen.</div>
+
+        <section class="q">
+          <h2 id="qTitle">Frage</h2>
+          <div class="prompt" id="prompt"></div>
+
+          <div class="row">
+            <input id="answer" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Antwort eingeben" />
+            <button class="btn" id="submit">Bestätigen</button>
+            <button class="btn secondary" id="reset" type="button">Neu starten</button>
+          </div>
+
+          <p class="msg" id="msg" aria-live="polite">Gib die Antwort ein.</p>
+        </section>
+
+        <section class="done" id="done">
+          <h3>Weiter</h3>
+          <p id="doneText"></p>
+        </section>
+      </section>
+
+      <footer class="footer">
+        <span>Desktop und Handy optimiert</span>
+        <span>Groß und Kleinschreibung ist egal</span>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const parkingFiguresHTML = `
+      <div class="figure-grid" aria-label="Parkbilder">
+        <div class="fig">
+          <div class="label"><span>Bild A</span><span>schief</span></div>
+          <svg viewBox="0 0 520 320" role="img" aria-label="Auto A schief geparkt">
+            <defs>
+              <linearGradient id="asph" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#15161a"/>
+                <stop offset="1" stop-color="#0b0c0f"/>
+              </linearGradient>
+              <linearGradient id="carA" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#3a3d45"/>
+                <stop offset="1" stop-color="#1f2229"/>
+              </linearGradient>
+            </defs>
+            <rect width="520" height="320" fill="url(#asph)"/>
+            <g opacity="0.9">
+              <rect x="60" y="40" width="400" height="240" rx="16" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+              <line x1="180" y1="55" x2="180" y2="265" stroke="rgba(255,255,255,0.35)" stroke-width="6"/>
+              <line x1="340" y1="55" x2="340" y2="265" stroke="rgba(255,255,255,0.35)" stroke-width="6"/>
+            </g>
+            <g transform="translate(260 160) rotate(-18) translate(-260 -160)">
+              <rect x="165" y="125" width="190" height="80" rx="18" fill="url(#carA)" stroke="rgba(255,255,255,0.18)"/>
+              <rect x="190" y="138" width="55" height="24" rx="6" fill="rgba(180,190,220,0.25)"/>
+              <rect x="255" y="138" width="70" height="24" rx="6" fill="rgba(180,190,220,0.20)"/>
+              <circle cx="205" cy="210" r="14" fill="#0a0a0b"/>
+              <circle cx="315" cy="210" r="14" fill="#0a0a0b"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="fig">
+          <div class="label"><span>Bild B</span><span>korrekt</span></div>
+          <svg viewBox="0 0 520 320" role="img" aria-label="Auto B korrekt geparkt">
+            <defs>
+              <linearGradient id="asph2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#15161a"/>
+                <stop offset="1" stop-color="#0b0c0f"/>
+              </linearGradient>
+              <linearGradient id="carB" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#3a3d45"/>
+                <stop offset="1" stop-color="#1f2229"/>
+              </linearGradient>
+            </defs>
+            <rect width="520" height="320" fill="url(#asph2)"/>
+            <g opacity="0.9">
+              <rect x="60" y="40" width="400" height="240" rx="16" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+              <line x1="180" y1="55" x2="180" y2="265" stroke="rgba(255,255,255,0.35)" stroke-width="6"/>
+              <line x1="340" y1="55" x2="340" y2="265" stroke="rgba(255,255,255,0.35)" stroke-width="6"/>
+            </g>
+            <g>
+              <rect x="205" y="115" width="110" height="125" rx="18" fill="url(#carB)" stroke="rgba(255,255,255,0.18)"/>
+              <rect x="220" y="132" width="40" height="26" rx="6" fill="rgba(180,190,220,0.25)"/>
+              <rect x="266" y="132" width="34" height="26" rx="6" fill="rgba(180,190,220,0.20)"/>
+              <circle cx="225" cy="235" r="14" fill="#0a0a0b"/>
+              <circle cx="295" cy="235" r="14" fill="#0a0a0b"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <small>Antwort: A oder B</small>
+    `;
+
+    const FINAL_TEXT = 
+`Oh nein.
+
+Die Seite fehlt. ES WAR DIE WICHTIGSTE
+
+Sie ist verloren, herausgerissen, verschwunden. Manche Dinge gehen einfach weg, ohne sich zu verabschieden. Andere bleiben. So wie der Kratzer an deinem Auto. Er war nicht wichtig, und doch ist er geblieben. Beständig. Unübersehbar.
+
+Seiten können fehlen. Gedanken können sich trennen. Und manchmal zerbricht etwas nicht aus Schwäche, sondern weil es die Zeit verlangt. Es gibt Menschen, die verstanden haben, dass Trennung nicht immer Verlust bedeutet. Dass ein Neubeginn manchmal nur möglich ist, wenn etwas Altes endet.
+
+Du musst die Seite finden.
+
+Der nächste Ort trägt einen Namen, der genau davon erzählt. Von Ordnung nach dem 2 Bruch, obwohl es schon 1 gab . Von Führung nach dem Chaos als aller erster... einen Mann, der wusste, wie man etwas zusammenhält und ein neu Anfang startet, indem man es neu verbindet, eine Zeit vor uns.
+
+Du weißt, wohin du gehen musst.`;
+
+    const QUESTIONS = [
+      {
+        story: "Du willst weiter. Dann rechne.",
+        title: "Frage 1",
+        prompt: `Ein Artikel kostet nach 19 Prozent Mehrwertsteuer genau 119 Euro. Wie hoch war der Nettopreis? <small>Antwort als Zahl</small>`,
+        answers: ["100"]
+      },
+      {
+        story: "Keine Ausrede. Nur eine Lösung.",
+        title: "Frage 2",
+        prompt: `Löse die Gleichung: 3(x - 4) + 2x = 26. Was ist x? <small>Antwort als Zahl</small>`,
+        answers: ["8"]
+      },
+      {
+        story: "Ich sehe, wie du parkst. Ich vergesse das nicht.",
+        title: "Frage 3",
+        prompt: `Welches Auto ist korrekt geparkt? ${parkingFiguresHTML}`,
+        answers: ["b","2","rechts"]
+      },
+      {
+        story: "Manche Rechenfehler kosten mehr als Zeit.",
+        title: "Frage 4",
+        prompt: `0,5 Liter Bier mit 5 Prozent Alkohol. Wie viel reiner Alkohol ist das in Milliliter? <small>Antwort als Zahl</small>`,
+        answers: ["25"]
+      },
+      {
+        story: "Ein Umfang. Eine Kante. Eine Entscheidung.",
+        title: "Frage 5",
+        prompt: `Ein Quadrat hat einen Umfang von 48 Zentimetern. Wie groß ist eine Seitenlänge? <small>Antwort als Zahl</small>`,
+        answers: ["12"]
+      },
+      {
+        story: "Du hast das Buch. Du hast das Licht. Jetzt fehlt etwas.",
+        title: "Frage 6",
+        prompt: `Welche Seite im Buch fehlt? <small></small>`,
+        answers: ["50","51"]
+      }
+    ];
+
+    const STORAGE_KEY = "schnitzeljagd_q_v2";
+
+    const el = (id) => document.getElementById(id);
+    const storyEl = el("story");
+    const stepTextEl = el("stepText");
+    const attemptsTextEl = el("attemptsText");
+    const barFillEl = el("barFill");
+    const qTitleEl = el("qTitle");
+    const promptEl = el("prompt");
+    const answerEl = el("answer");
+    const msgEl = el("msg");
+    const doneEl = el("done");
+    const doneTextEl = el("doneText");
+    const submitBtn = el("submit");
+    const resetBtn = el("reset");
+
+    let state = loadState();
+
+    function normalize(s){
+      return String(s ?? "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g,"")
+        .replaceAll("%","")
+        .replaceAll("€","")
+        .replaceAll("eur","")
+        .replaceAll("euro","")
+        .replaceAll("ml","")
+        .replaceAll("km","")
+        .replaceAll(",",".");
+
+    }
+
+    function clampInt(n, min, max){
+      const v = Number.isFinite(Number(n)) ? Math.floor(Number(n)) : min;
+      return Math.max(min, Math.min(max, v));
+    }
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return { idx: 0, attempts: 0, solved: false };
+        const parsed = JSON.parse(raw);
+        return {
+          idx: clampInt(parsed.idx, 0, QUESTIONS.length - 1),
+          attempts: clampInt(parsed.attempts, 0, 999999),
+          solved: Boolean(parsed.solved)
+        };
+      }catch{
+        return { idx: 0, attempts: 0, solved: false };
+      }
+    }
+
+    function saveState(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function setMessage(type, text){
+      msgEl.className = "msg";
+      if(type === "ok") msgEl.classList.add("ok");
+      if(type === "bad") msgEl.classList.add("bad");
+      msgEl.textContent = text;
+    }
+
+    function render(){
+      const q = QUESTIONS[state.idx];
+
+      storyEl.textContent = q.story ?? "";
+      qTitleEl.textContent = q.title ?? `Frage ${state.idx + 1}`;
+      promptEl.innerHTML = q.prompt ?? "";
+
+      stepTextEl.textContent = `Frage ${state.idx + 1} von ${QUESTIONS.length}`;
+      attemptsTextEl.textContent = `Versuche: ${state.attempts}`;
+
+      const pct = Math.round((state.idx / QUESTIONS.length) * 100);
+      barFillEl.style.width = `${state.solved ? 100 : pct}%`;
+
+      doneEl.style.display = state.solved ? "block" : "none";
+      submitBtn.disabled = state.solved;
+
+      if(state.solved){
+        setMessage("ok", "Abgeschlossen.");
+        doneTextEl.textContent = FINAL_TEXT;
+      } else {
+        setMessage("none", "Gib die Antwort ein.");
+        doneTextEl.textContent = "";
+      }
+
+      answerEl.value = "";
+      answerEl.focus({ preventScroll: true });
+    }
+
+    function isCorrect(input, answers){
+      const n = normalize(input);
+      return (answers || []).some(a => normalize(a) === n);
+    }
+
+    function finish(){
+      state.solved = true;
+      saveState();
+      render();
+    }
+
+    function next(){
+      state.idx = Math.min(QUESTIONS.length - 1, state.idx + 1);
+      saveState();
+      render();
+    }
+
+    function handleSubmit(){
+      if(state.solved) return;
+
+      const q = QUESTIONS[state.idx];
+      const val = answerEl.value;
+
+      state.attempts += 1;
+      saveState();
+
+      if(isCorrect(val, q.answers)){
+        setMessage("ok", "Richtig.");
+        const last = state.idx === QUESTIONS.length - 1;
+        if(last){
+          setTimeout(finish, 450);
+        } else {
+          setTimeout(next, 450);
+        }
+      } else {
+        setMessage("bad", "Falsch. Versuch es erneut.");
+        answerEl.select();
+      }
+      attemptsTextEl.textContent = `Versuche: ${state.attempts}`;
+    }
+
+    function resetAll(){
+      state = { idx: 0, attempts: 0, solved: false };
+      saveState();
+      render();
+    }
+
+    submitBtn.addEventListener("click", handleSubmit);
+    resetBtn.addEventListener("click", resetAll);
+    answerEl.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") handleSubmit();
+    });
+
+    render();
+  </script>
+</body>
+</html>
